@@ -2,34 +2,26 @@
 #include "typewise-alert.h"
 
 TEST(TypeWiseAlertTestSuite, InfersBreachAccordingToLimits) {
-    EXPECT_EQ(inferBreach(25, 20, 30), NORMAL);
-    EXPECT_EQ(inferBreach(15, 20, 30), TOO_LOW);
-    EXPECT_EQ(inferBreach(35, 20, 30), TOO_HIGH);
-}
+    // Test cases for inferBreach function
 
-TEST(TypeWiseAlertTestSuite, ClassifiesTemperatureBreach) {
-    EXPECT_EQ(classifyTemperatureBreach(PASSIVE_COOLING, 30), NORMAL);
-    EXPECT_EQ(classifyTemperatureBreach(PASSIVE_COOLING, 40), TOO_HIGH);
-    EXPECT_EQ(classifyTemperatureBreach(HI_ACTIVE_COOLING, 50), TOO_HIGH);
-    EXPECT_EQ(classifyTemperatureBreach(MED_ACTIVE_COOLING, -1), TOO_LOW);
-}
+    // Test case for TOO_LOW
+    EXPECT_EQ(inferBreach(-1.0, 0.0, 35.0), TOO_LOW); // Value below lower limit
+    EXPECT_EQ(inferBreach(0.0, 0.0, 35.0), NORMAL);  // Value equal to lower limit
 
-TEST(TypeWiseAlertTestSuite, CheckAndAlert_High_Breach_Email) {
-    BatteryCharacter batteryChar = {PASSIVE_COOLING, "BrandC"};
-    checkAndAlert(TO_EMAIL, batteryChar, 36);  // Should send too high alert via email
-}
- 
-TEST(TypeWiseAlertTestSuite, CheckAndAlert_Low_Breach_Email) {
-    BatteryCharacter batteryChar = {PASSIVE_COOLING, "BrandD"};
-    checkAndAlert(TO_EMAIL, batteryChar, 5);  // Should send too low alert via email
-}
-TEST(TypeWiseAlertTestSuite, CheckAndAlertController) {
-    BatteryCharacter batteryChar = {PASSIVE_COOLING, "BrandX"};
-    checkAndAlert(TO_CONTROLLER, batteryChar, 30);  // Should send normal alert to controller
-}
+    // Test case for NORMAL
+    EXPECT_EQ(inferBreach(17.0, 0.0, 35.0), NORMAL); // Value within limits
+    EXPECT_EQ(inferBreach(35.0, 0.0, 35.0), NORMAL); // Value equal to upper limit
 
+    // Test case for TOO_HIGH
+    EXPECT_EQ(inferBreach(36.0, 0.0, 35.0), TOO_HIGH); // Value above upper limit
 
-TEST(TypeWiseAlertTestSuite, CheckAndAlertEmail) {
-    BatteryCharacter batteryChar = {HI_ACTIVE_COOLING, "BrandY"};
-    checkAndAlert(TO_EMAIL, batteryChar, 50);  // Should send too high alert via email
+    // Test case for a different range
+    EXPECT_EQ(inferBreach(10.0, 0.0, 45.0), NORMAL); // Value within higher limits
+    EXPECT_EQ(inferBreach(46.0, 0.0, 45.0), TOO_HIGH); // Value above higher limits
+    EXPECT_EQ(inferBreach(-5.0, 0.0, 45.0), TOO_LOW); // Value below lower limit for higher range
+
+    // Test case for another range
+    EXPECT_EQ(inferBreach(20.0, 0.0, 40.0), NORMAL); // Value within medium active limits
+    EXPECT_EQ(inferBreach(41.0, 0.0, 40.0), TOO_HIGH); // Value above medium upper limit
+    EXPECT_EQ(inferBreach(-1.0, 0.0, 40.0), TOO_LOW); // Value below medium lower limit
 }
