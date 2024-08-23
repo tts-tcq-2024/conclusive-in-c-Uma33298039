@@ -1,7 +1,7 @@
-#include "alert_checker.h"
+#include "TemperatureAlert_checker.h"
 #include "breach_detector.h"
 #include "alert_to_controller.h"
-#include "email_alert.h"
+#include "AlertInEmail.h"
 #include "alert_function.h" 
 
 static const struct {
