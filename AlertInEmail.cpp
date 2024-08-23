@@ -1,4 +1,4 @@
-#include "email_alert.h"
+#include "AlertInEmail.h"
 #include <stdio.h>
 
 void send_to_email(breach_type breach) {
