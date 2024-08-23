@@ -7,7 +7,7 @@
 TEST(TypeWiseAlertTestSuite, InfersBreachAccordingToLimits) {
     EXPECT_EQ(infer_breach(12, 20, 30), TOO_LOW);
     EXPECT_EQ(infer_breach(25, 20, 30), NORMAL);
-    EXPECT_EQ(infer_breach(35, 20, 30), TOO_HIGH);
+    EXPECT_EQ(infer_breach(34, 20, 30), TOO_HIGH);
 }
 
 TEST(TypeWiseAlertTestSuite, ClassifiesTemperatureBreachForCoolingTypes) {
