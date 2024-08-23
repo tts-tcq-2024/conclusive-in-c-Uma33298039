@@ -45,6 +45,7 @@ TEST(TypeWiseAlertTestSuite, CheckAndAlertToController) {
     EXPECT_EQ(output, "feed : 2\n");
 }
 
+
 TEST(TypeWiseAlertTestSuite, CheckAndAlertToEmail) {
     BatteryCharacter batteryChar = {HI_ACTIVE_COOLING, "BrandY"};    
     testing::internal::CaptureStdout();
