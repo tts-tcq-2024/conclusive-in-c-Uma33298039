@@ -1,6 +1,5 @@
 #pragma once
 
-#include "typewise-alert.h"
-#include "generateEmailMessage.h"
+#include "breach_type.h"
 
-void sendToEmail(BreachType breachType);
+void send_to_email(breach_type breach);
