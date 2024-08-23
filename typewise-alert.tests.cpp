@@ -1,27 +1,54 @@
 #include <gtest/gtest.h>
-#include "typewise-alert.h"
+#include "breach_detector.h"
+#include "alert_checker.h"
+#include "message_sender_to_controller.h"
+#include "message_sender_to_email.h"
 
 TEST(TypeWiseAlertTestSuite, InfersBreachAccordingToLimits) {
-    // Test cases for inferBreach function
+    EXPECT_EQ(infer_breach(12, 20, 30), TOO_LOW);
+    EXPECT_EQ(infer_breach(25, 20, 30), NORMAL);
+    EXPECT_EQ(infer_breach(35, 20, 30), TOO_HIGH);
+}
 
-    // Test case for TOO_LOW
-    EXPECT_EQ(inferBreach(-1.0, 0.0, 35.0), TOO_LOW); // Value below lower limit
-    EXPECT_EQ(inferBreach(0.0, 0.0, 35.0), NORMAL);  // Value equal to lower limit
+TEST(TypeWiseAlertTestSuite, ClassifiesTemperatureBreachForCoolingTypes) {
+    EXPECT_EQ(classify_temperature_breach(PASSIVE_COOLING, 36), TOO_HIGH);
+    EXPECT_EQ(classify_temperature_breach(HI_ACTIVE_COOLING, 46), TOO_HIGH);
+    EXPECT_EQ(classify_temperature_breach(MED_ACTIVE_COOLING, 41), TOO_HIGH);
+    EXPECT_EQ(classify_temperature_breach(PASSIVE_COOLING, 20), NORMAL);
+}
 
-    // Test case for NORMAL
-    EXPECT_EQ(inferBreach(17.0, 0.0, 35.0), NORMAL); // Value within limits
-    EXPECT_EQ(inferBreach(35.0, 0.0, 35.0), NORMAL); // Value equal to upper limit
+TEST(TypeWiseAlertTestSuite, SendsAlertToController) {
+    testing::internal::CaptureStdout();
+    send_to_controller(TOO_HIGH);
+    std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output, "feed : 2\n");
+}
 
-    // Test case for TOO_HIGH
-    EXPECT_EQ(inferBreach(36.0, 0.0, 35.0), TOO_HIGH); // Value above upper limit
+TEST(TypeWiseAlertTestSuite, SendsAlertToEmail) {
+    testing::internal::CaptureStdout();
+    send_to_email(TOO_LOW);
+    std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output, "To: a.b@c.com\nHi, the temperature is too low\n");
 
-    // Test case for a different range
-    EXPECT_EQ(inferBreach(10.0, 0.0, 45.0), NORMAL); // Value within higher limits
-    EXPECT_EQ(inferBreach(46.0, 0.0, 45.0), TOO_HIGH); // Value above higher limits
-    EXPECT_EQ(inferBreach(-5.0, 0.0, 45.0), TOO_LOW); // Value below lower limit for higher range
+    testing::internal::CaptureStdout();
+    send_to_email(TOO_HIGH);
+    output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output, "To: a.b@c.com\nHi, the temperature is too high\n");
+}
 
-    // Test case for another range
-    EXPECT_EQ(inferBreach(20.0, 0.0, 40.0), NORMAL); // Value within medium active limits
-    EXPECT_EQ(inferBreach(41.0, 0.0, 40.0), TOO_HIGH); // Value above medium upper limit
-    EXPECT_EQ(inferBreach(-1.0, 0.0, 40.0), TOO_LOW); // Value below medium lower limit
+TEST(TypeWiseAlertTestSuite, CheckAndAlertToController) {
+    BatteryCharacter batteryChar = {PASSIVE_COOLING, "BrandX"};
+    
+    testing::internal::CaptureStdout();
+    check_and_alert(TO_CONTROLLER, batteryChar, 36);
+    std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output, "feed : 2\n");
+}
+
+TEST(TypeWiseAlertTestSuite, CheckAndAlertToEmail) {
+    BatteryCharacter batteryChar = {HI_ACTIVE_COOLING, "BrandY"};    
+    testing::internal::CaptureStdout();
+    check_and_alert(TO_EMAIL, batteryChar, 46);
+    std::string output = testing::internal::GetCapturedStdout();
+    EXPECT_EQ(output, "To: a.b@c.com\nHi, the temperature is too high\n");
 }
