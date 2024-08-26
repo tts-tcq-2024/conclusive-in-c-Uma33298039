@@ -1,11 +1,7 @@
 #ifndef ALERT_IN_EMAIL_H
 #define ALERT_IN_EMAIL_H
 
-enum breach_type {
-    NORMAL,
-    LOW_BREACH,
-    HIGH_BREACH
-};
+#include "breach_type.h"
 
 void send_to_email(breach_type breach);
 
