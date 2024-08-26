@@ -23,6 +23,7 @@ add_executable(
     alert_checker.cpp
     alert_to_controller.cpp
     AlertInEmail.cpp
+    typewise-alert.tests.cpp
 )
 
 target_link_libraries(
