@@ -17,10 +17,15 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 add_compile_options("--coverage")
 add_executable(
-  cleancode
-  typewise-alert.cpp
-  typewise-alert.tests.cpp
+    cleancode
+    cooling_config.cpp
+    breach_detector.cpp
+    alert_checker.cpp
+    alert_to_controller.cpp
+    AlertInEmail.cpp
+    typewise-alert.tests.cpp
 )
+
 target_link_libraries(
   cleancode
   GTest::gmock_main
