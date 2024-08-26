@@ -50,10 +50,24 @@ TEST(AlertInEmail, TestSendToEmailNormal) {
 }
 
 // Test for send_to_controller
-TEST(AlertToController, TestSendToController) {
+TEST(AlertToController, TestSendToControllerTooLow) {
     PrintfCapture capture;
     send_to_controller(TOO_LOW);
     std::string expected = "feed : 1\n"; // Assuming breach_type TOO_LOW == 1
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(AlertToController, TestSendToControllerTooHigh) {
+    PrintfCapture capture;
+    send_to_controller(TOO_HIGH);
+    std::string expected = "feed : 2\n"; // Assuming breach_type TOO_HIGH == 2
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(AlertToController, TestSendToControllerNormal) {
+    PrintfCapture capture;
+    send_to_controller(NORMAL);
+    std::string expected = "feed : 0\n"; // Assuming breach_type NORMAL == 0
     EXPECT_EQ(capture.str(), expected);
 }
 
@@ -70,26 +84,70 @@ TEST(BreachDetector, TestInferBreachNormal) {
     EXPECT_EQ(infer_breach(25, 20, 30), NORMAL);
 }
 
-TEST(BreachDetector, TestClassifyTemperatureBreach) {
+TEST(BreachDetector, TestClassifyTemperatureBreachPassiveCooling) {
     EXPECT_EQ(classify_temperature_breach(PASSIVE_COOLING, 50), TOO_HIGH);
+    EXPECT_EQ(classify_temperature_breach(PASSIVE_COOLING, -5), TOO_LOW);
+    EXPECT_EQ(classify_temperature_breach(PASSIVE_COOLING, 20), NORMAL);
+}
+
+TEST(BreachDetector, TestClassifyTemperatureBreachHiActiveCooling) {
+    EXPECT_EQ(classify_temperature_breach(HI_ACTIVE_COOLING, 60), TOO_HIGH);
     EXPECT_EQ(classify_temperature_breach(HI_ACTIVE_COOLING, -5), TOO_LOW);
-    EXPECT_EQ(classify_temperature_breach(MED_ACTIVE_COOLING, 20), NORMAL);
+    EXPECT_EQ(classify_temperature_breach(HI_ACTIVE_COOLING, 30), NORMAL);
+}
+
+TEST(BreachDetector, TestClassifyTemperatureBreachMedActiveCooling) {
+    EXPECT_EQ(classify_temperature_breach(MED_ACTIVE_COOLING, 45), TOO_HIGH);
+    EXPECT_EQ(classify_temperature_breach(MED_ACTIVE_COOLING, -5), TOO_LOW);
+    EXPECT_EQ(classify_temperature_breach(MED_ACTIVE_COOLING, 30), NORMAL);
 }
 
 // Test for check_and_alert
-TEST(TemperatureAlertChecker, TestCheckAndAlertToController) {
+TEST(TemperatureAlertChecker, TestCheckAndAlertToControllerTooHigh) {
     PrintfCapture capture;
     battery_character battery = {PASSIVE_COOLING, "Battery 1"};
     check_and_alert(TO_CONTROLLER, battery, 50);
-    std::string expected = "feed : 2\n"; // Assuming breach_type TOO_HIGH == 2
+    std::string expected = "feed : 2\n"; // TOO_HIGH
     EXPECT_EQ(capture.str(), expected);
 }
 
-TEST(TemperatureAlertChecker, TestCheckAndAlertToEmail) {
+TEST(TemperatureAlertChecker, TestCheckAndAlertToControllerTooLow) {
     PrintfCapture capture;
     battery_character battery = {HI_ACTIVE_COOLING, "Battery 2"};
+    check_and_alert(TO_CONTROLLER, battery, -5);
+    std::string expected = "feed : 1\n"; // TOO_LOW
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(TemperatureAlertChecker, TestCheckAndAlertToControllerNormal) {
+    PrintfCapture capture;
+    battery_character battery = {MED_ACTIVE_COOLING, "Battery 3"};
+    check_and_alert(TO_CONTROLLER, battery, 30);
+    std::string expected = "feed : 0\n"; // NORMAL
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(TemperatureAlertChecker, TestCheckAndAlertToEmailTooHigh) {
+    PrintfCapture capture;
+    battery_character battery = {PASSIVE_COOLING, "Battery 4"};
+    check_and_alert(TO_EMAIL, battery, 50);
+    std::string expected = "To: a.b@c.com\nHi, the temperature is too high\n";
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(TemperatureAlertChecker, TestCheckAndAlertToEmailTooLow) {
+    PrintfCapture capture;
+    battery_character battery = {HI_ACTIVE_COOLING, "Battery 5"};
     check_and_alert(TO_EMAIL, battery, -5);
     std::string expected = "To: a.b@c.com\nHi, the temperature is too low\n";
+    EXPECT_EQ(capture.str(), expected);
+}
+
+TEST(TemperatureAlertChecker, TestCheckAndAlertToEmailNormal) {
+    PrintfCapture capture;
+    battery_character battery = {MED_ACTIVE_COOLING, "Battery 6"};
+    check_and_alert(TO_EMAIL, battery, 30);
+    std::string expected = "To: a.b@c.com\n";
     EXPECT_EQ(capture.str(), expected);
 }
 
